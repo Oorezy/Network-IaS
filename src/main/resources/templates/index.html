@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stylish Modern Page</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        header {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.05);
+            z-index: 1000;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        nav a {
+            color: #fff;
+            margin-left: 20px;
+            text-decoration: none;
+            position: relative;
+        }
+
+        nav a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 0%;
+            height: 2px;
+            background: #00f5d4;
+            transition: 0.3s;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            background: linear-gradient(90deg, #00f5d4, #9b5de5);
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: fadeIn 2s ease forwards;
+        }
+
+        .hero p {
+            margin-top: 20px;
+            opacity: 0.8;
+            max-width: 600px;
+        }
+
+        .btn {
+            margin-top: 30px;
+            padding: 12px 30px;
+            border: none;
+            background: linear-gradient(90deg, #00f5d4, #9b5de5);
+            color: #fff;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .card {
+            width: 250px;
+            height: 180px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.4s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: rotateY(15deg) scale(1.05);
+        }
+
+        footer {
+            padding: 30px;
+            text-align: center;
+            background: rgba(0,0,0,0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>MySite</h1>
+    <nav>
+        <a href="#hero">Home</a>
+        <a href="#features">Features</a>
+        <a href="#contact">Contact</a>
+    </nav>
+</header>
+
+<section id="hero" class="hero">
+    <h2>Future Web Experience</h2>
+    <p>Beautiful animations, smooth interactions, and modern UI design combined into one elegant page.</p>
+    <button class="btn" onclick="changeTheme()">Change Theme</button>
+    <button class="btn" onclick="window.location.href='/test'">Click to experience another Theme</button>
+</section>
+
+<section id="features">
+    <h2>Features</h2>
+    <div class="cards">
+        <div class="card">Fast</div>
+        <div class="card">Responsive</div>
+        <div class="card">Interactive</div>
+        <div class="card">Modern UI</div>
+    </div>
+</section>
+
+<section id="contact">
+    <h2>Stay Connected</h2>
+    <p id="dynamicText">Hover to see magic ✨</p>
+</section>
+
+<footer>
+    <p>© 2026 Stylish Page</p>
+</footer>
+
+<script>
+    // Theme changer
+    function changeTheme() {
+        const body = document.body;
+        body.style.background =
+            "linear-gradient(135deg, #ff512f, #dd2476)";
+    }
+
+    // Dynamic hover text effect
+    const text = document.getElementById("dynamicText");
+    text.addEventListener("mouseover", () => {
+        text.innerText = "You discovered the interaction 🚀";
+    });
+
+    text.addEventListener("mouseout", () => {
+        text.innerText = "Hover to see magic ✨";
+    });
+
+    // Scroll animation
+    const sections = document.querySelectorAll("section");
+
+    window.addEventListener("mouseover", () => {
+        sections.forEach(sec => {
+            const top = window.scrollY;
+            const offset = sec.offsetTop - 400;
+            if (top > offset) {
+                sec.style.opacity = 1;
+                sec.style.transform = "translateY(0)";
+            } else {
+                sec.style.opacity = 0;
+                sec.style.transform = "translateY(50px)";
+            }
+        });
+    });
+
+    sections.forEach(sec => {
+        sec.style.opacity = 0;
+        sec.style.transition = "0.8s";
+    });
+</script>
+
+</body>
+</html>
