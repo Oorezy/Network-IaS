@@ -1,0 +1,123 @@
+- name: Provision VM with Docker, Nginx, HTTPS and deploy app container
+  hosts: all
+  become: true
+
+  vars:
+    app_image: "oorezy/webapp:latest"
+    app_container_name: "spring-webapp"
+    domain_name: "{{ lookup('env', 'DOMAIN_NAME') | default(inventory_hostname, true) }}"
+    letsencrypt_email: "{{ lookup('env', 'LETSENCRYPT_EMAIL') | default('you@givmail.com', true) }}"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install base packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - apt-transport-https
+        state: present
+
+    - name: Add Docker GPG key
+      shell: |
+        install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        chmod a+r /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Add Docker repo
+      shell: |
+        echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo $VERSION_CODENAME) stable" \
+        > /etc/apt/sources.list.d/docker.list
+      args:
+        creates: /etc/apt/sources.list.d/docker.list
+
+    - name: Install Docker
+      apt:
+        update_cache: yes
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker starts on boot
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Install Nginx and Certbot
+      apt:
+        name:
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+        state: present
+
+    - name: Create webroot for ACME challenges
+      file:
+        path: /var/www/html
+        state: directory
+        mode: "0755"
+
+    - name: Deploy Nginx site config (HTTP first)
+      template:
+        src: ./nginx_app.conf.j2
+        dest: /etc/nginx/sites-available/spring-webapp.conf
+      notify: Reload nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/spring-webapp.conf
+        dest: /etc/nginx/sites-enabled/spring-webapp.conf
+        state: link
+      notify: Reload nginx
+
+    - name: Disable default site if present
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload nginx
+
+    - name: Pull application image
+      community.docker.docker_image:
+        name: "{{ app_image }}"
+        source: pull
+
+    - name: Run (or update) container on port 8080
+      community.docker.docker_container:
+        name: "{{ app_container_name }}"
+        image: "{{ app_image }}"
+        restart_policy: always
+        state: started
+        ports:
+          - "8080:8080"
+
+    - name: Obtain/renew Let’s Encrypt cert (Nginx plugin)
+      command: >
+        certbot --nginx
+        -d {{ domain_name }}
+        -m {{ letsencrypt_email }}
+        --agree-tos
+        --non-interactive
+        --redirect
+      register: certbot_result
+      changed_when: "'Congratulations' in certbot_result.stdout or 'Deploying Certificate' in certbot_result.stdout"
+      failed_when: certbot_result.rc != 0 and ('Certificate not yet due' not in certbot_result.stdout)
+
+  handlers:
+    - name: Reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
