@@ -1,0 +1,46 @@
+name: Build and deploy to Azure VM with Ansible and Terraform
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build_push_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: oorezy
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: oorezy/app-terra:latest
+
+      - name: Install Ansible
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install ansible
+          ansible-galaxy collection install community.docker
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "oore-terraform.norwayeast.cloudapp.azure.com" >> ~/.ssh/known_hosts
+
+      - name: Deploy with Ansible
+        run: |
+          ansible-playbook \
+            -i ./ansible/hosts.ini \
+            ./ansible/playbook.yml

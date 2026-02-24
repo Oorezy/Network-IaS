@@ -5,8 +5,8 @@
   vars:
     app_image: "oorezy/webapp:latest"
     app_container_name: "spring-webapp"
-    domain_name: "{{ lookup('env', 'DOMAIN_NAME') | default(inventory_hostname, true) }}"
-    letsencrypt_email: "{{ lookup('env', 'LETSENCRYPT_EMAIL') | default('you@givmail.com', true) }}"
+    domain_name: "oore-terraform.norwayeast.cloudapp.azure.com"
+    encrypt_email: "ooreoluwaibitowa@gmail.com"
 
   tasks:
     - name: Update apt cache
@@ -108,7 +108,7 @@
       command: >
         certbot --nginx
         -d {{ domain_name }}
-        -m {{ letsencrypt_email }}
+        -m {{ encrypt_email }}
         --agree-tos
         --non-interactive
         --redirect
