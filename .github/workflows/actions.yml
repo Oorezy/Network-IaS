@@ -24,7 +24,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: oorezy/app-terra:latest
+          tags: oorezy/webapp:latest
 
       - name: Install Ansible
         run: |
