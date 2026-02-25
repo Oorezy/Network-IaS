@@ -90,17 +90,19 @@
         state: absent
       notify: Reload nginx
 
-    - name: Pull application image
-      community.docker.docker_image:
-        name: "{{ app_image }}"
-        source: pull
+#    - name: Pull application image
+#      community.docker.docker_image:
+#        name: "{{ app_image }}"
+#        source: pull
 
-    - name: Run (or update) container on port 8080
+    - name: Pull application image and Run (or update) container on port 8080
       community.docker.docker_container:
         name: "{{ app_container_name }}"
         image: "{{ app_image }}"
         restart_policy: always
         state: started
+        pull: true
+        recreate: true
         ports:
           - "8080:8080"
 

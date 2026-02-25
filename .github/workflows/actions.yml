@@ -43,4 +43,4 @@ jobs:
         run: |
           ansible-playbook \
             -i ./ansible/hosts.ini \
-            ./ansible/playbook.yml
+            ./ansible/playbook.yml -vvv
