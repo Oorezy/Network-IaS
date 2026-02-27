@@ -30,7 +30,7 @@ variable "ssh_public_key" {
 
 variable "ssh_allowed_cidr" {
   type        = string
-  default     = "89.19.88.132/32"
+  default     = "*"     /*"89.19.88.132/32"*/
   description = "CIDR allowed to SSH to VM."
 }
 
